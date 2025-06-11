@@ -1,110 +1,4 @@
 
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Textarea } from "@/components/ui/textarea";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
-
-// export function CompanyProfile() {
-//   const [formData, setFormData] = useState({
-//     industry: "",
-//     size: "",
-//     markets: "",
-//     strategicGoals: "",
-//   });
-
-//   const handleInputChange = (field: string, value: string) => {
-//     setFormData(prev => ({ ...prev, [field]: value }));
-//   };
-
-//   const handleSave = () => {
-//     console.log("Company Profile saved:", formData);
-//     // Implementation for saving company profile
-//   };
-
-//   return (
-//     <div className="mt-6 space-y-6">
-//       <div className="p-6 bg-blue-50 rounded-lg border-l-4 border-blue-500">
-//         <h3 className="text-lg font-semibold text-blue-900 mb-2">Company Profile Settings</h3>
-//         <p className="text-sm text-blue-700 mb-4">
-//           Configure your company information to help AI agents understand your business context and goals.
-//         </p>
-        
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//           <div className="space-y-2">
-//             <Label htmlFor="industry">Industry</Label>
-//             <Select value={formData.industry} onValueChange={(value) => handleInputChange("industry", value)}>
-//               <SelectTrigger>
-//                 <SelectValue placeholder="Select your industry" />
-//               </SelectTrigger>
-//               <SelectContent>
-//                 <SelectItem value="technology">Technology</SelectItem>
-//                 <SelectItem value="healthcare">Healthcare</SelectItem>
-//                 <SelectItem value="finance">Finance</SelectItem>
-//                 <SelectItem value="manufacturing">Manufacturing</SelectItem>
-//                 <SelectItem value="retail">Retail</SelectItem>
-//                 <SelectItem value="education">Education</SelectItem>
-//                 <SelectItem value="other">Other</SelectItem>
-//               </SelectContent>
-//             </Select>
-//           </div>
-
-//           <div className="space-y-2">
-//             <Label htmlFor="size">Company Size</Label>
-//             <Select value={formData.size} onValueChange={(value) => handleInputChange("size", value)}>
-//               <SelectTrigger>
-//                 <SelectValue placeholder="Select company size" />
-//               </SelectTrigger>
-//               <SelectContent>
-//                 <SelectItem value="startup">Startup (1-10)</SelectItem>
-//                 <SelectItem value="small">Small (11-50)</SelectItem>
-//                 <SelectItem value="medium">Medium (51-200)</SelectItem>
-//                 <SelectItem value="large">Large (201-1000)</SelectItem>
-//                 <SelectItem value="enterprise">Enterprise (1000+)</SelectItem>
-//               </SelectContent>
-//             </Select>
-//           </div>
-
-//           <div className="space-y-2 md:col-span-2">
-//             <Label htmlFor="markets">Target Markets</Label>
-//             <Input
-//               id="markets"
-//               value={formData.markets}
-//               onChange={(e) => handleInputChange("markets", e.target.value)}
-//               placeholder="e.g., North America, Europe, Asia-Pacific"
-//             />
-//           </div>
-
-//           <div className="space-y-2 md:col-span-2">
-//             <Label htmlFor="strategicGoals">Strategic Goals</Label>
-//             <Textarea
-//               id="strategicGoals"
-//               value={formData.strategicGoals}
-//               onChange={(e) => handleInputChange("strategicGoals", e.target.value)}
-//               placeholder="e.g., Expand to UK in 3 years, Increase market share by 25%"
-//               rows={3}
-//             />
-//           </div>
-//         </div>
-
-//         <div className="mt-6 pt-4 border-t border-blue-200">
-//           <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-//             Save Company Profile
-//           </Button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -119,10 +13,16 @@ import {
 } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 
+interface SocialMediaUrl {
+  platform: string;
+  url: string;
+}
+
 export function CompanyProfile() {
   const [formData, setFormData] = useState({
     industry: "",
     companySize: "",
+    companyUrl: "",
     strategicGoals: "",
     primaryGTMModel: "",
     revenueStage: "",
@@ -130,6 +30,15 @@ export function CompanyProfile() {
   });
 
   const [targetMarkets, setTargetMarkets] = useState<string[]>([""]);
+  const [socialMediaUrls, setSocialMediaUrls] = useState<SocialMediaUrl[]>([]);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
+
+  const socialPlatforms = [
+    { value: "linkedin", label: "LinkedIn" },
+    { value: "instagram", label: "Instagram" },
+    { value: "twitter", label: "Twitter" },
+    { value: "facebook", label: "Facebook" },
+  ];
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -152,8 +61,30 @@ export function CompanyProfile() {
     }
   };
 
+  const addSocialMediaUrl = () => {
+    if (selectedPlatform) {
+      setSocialMediaUrls([...socialMediaUrls, { platform: selectedPlatform, url: "" }]);
+      setSelectedPlatform("");
+    }
+  };
+
+  const removeSocialMediaUrl = (index: number) => {
+    const newSocialMediaUrls = socialMediaUrls.filter((_, i) => i !== index);
+    setSocialMediaUrls(newSocialMediaUrls);
+  };
+
+  const handleSocialMediaUrlChange = (index: number, value: string) => {
+    const newSocialMediaUrls = [...socialMediaUrls];
+    newSocialMediaUrls[index].url = value;
+    setSocialMediaUrls(newSocialMediaUrls);
+  };
+
+  const getPlatformLabel = (platform: string) => {
+    return socialPlatforms.find(p => p.value === platform)?.label || platform;
+  };
+
   const handleSave = () => {
-    console.log("Company Profile saved:", { ...formData, targetMarkets });
+    console.log("Company Profile saved:", { ...formData, targetMarkets, socialMediaUrls });
     // Implementation for saving company profile
   };
 
@@ -199,6 +130,70 @@ export function CompanyProfile() {
                 <SelectItem value="500+">500+</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="companyUrl">Company URL</Label>
+            <Input
+              id="companyUrl"
+              value={formData.companyUrl}
+              onChange={(e) => handleInputChange("companyUrl", e.target.value)}
+              placeholder="Enter your Company url"
+            />
+          </div>
+
+          
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="socialMediaUrls">Social Media URLs</Label>
+            {socialMediaUrls.map((socialUrl, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <div className="w-24 text-sm font-medium text-gray-600">
+                  {getPlatformLabel(socialUrl.platform)}:
+                </div>
+                <Input
+                  value={socialUrl.url}
+                  onChange={(e) => handleSocialMediaUrlChange(index, e.target.value)}
+                  placeholder={`Enter your ${getPlatformLabel(socialUrl.platform)} URL`}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => removeSocialMediaUrl(index)}
+                  className="shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+            <div className="flex gap-2 items-center">
+              <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select platform" />
+                </SelectTrigger>
+                <SelectContent>
+                  {socialPlatforms
+                    .filter(platform => !socialMediaUrls.some(url => url.platform === platform.value))
+                    .map(platform => (
+                      <SelectItem key={platform.value} value={platform.value}>
+                        {platform.label}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addSocialMediaUrl}
+                disabled={!selectedPlatform}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add URL
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2 md:col-span-2">
