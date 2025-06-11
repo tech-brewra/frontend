@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,10 +82,60 @@ export function CompanyProfile() {
     return socialPlatforms.find(p => p.value === platform)?.label || platform;
   };
 
-  const handleSave = () => {
-    console.log("Company Profile saved:", { ...formData, targetMarkets, socialMediaUrls });
-    // Implementation for saving company profile
+
+const handleSave = async () => {
+  const payload = {
+    industry: formData.industry,
+    companySize: formData.companySize,
+    companyUrl: formData.companyUrl,
+    strategicGoals: formData.strategicGoals,
+    primaryGTMModel: formData.primaryGTMModel,
+    revenueStage: formData.revenueStage,
+    keyBuyerPersona: formData.keyBuyerPersona,
+    targetMarkets: targetMarkets.filter(market => market.trim() !== ""),
+    socialMediaUrls: socialMediaUrls.map(url => ({
+      platform: getPlatformLabel(url.platform),
+      url: url.url,
+    })),
   };
+
+  try {
+    const response = await fetch("https://backend-11kr.onrender.com/profile/company", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("Company profile saved:", result);
+    alert("Company profile saved successfully!");
+
+    // ✅ Reset form fields after success
+    setFormData({
+      industry: "",
+      companySize: "",
+      companyUrl: "",
+      strategicGoals: "",
+      primaryGTMModel: "",
+      revenueStage: "",
+      keyBuyerPersona: "",
+    });
+    setTargetMarkets([""]);
+    setSocialMediaUrls([]);
+    setSelectedPlatform("");
+
+  } catch (error) {
+    console.error("Error saving company profile:", error);
+    alert("Failed to save company profile. Please try again.");
+  }
+};
+
 
   return (
     <div className="mt-6 space-y-6">
@@ -95,7 +144,7 @@ export function CompanyProfile() {
         <p className="text-sm text-blue-700 mb-4">
           Configure your company information to help AI agents understand your business context and goals.
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="industry">Industry</Label>
@@ -138,11 +187,10 @@ export function CompanyProfile() {
               id="companyUrl"
               value={formData.companyUrl}
               onChange={(e) => handleInputChange("companyUrl", e.target.value)}
-              placeholder="Enter your Company url"
+              placeholder="Enter your Company URL"
             />
           </div>
 
-          
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="socialMediaUrls">Social Media URLs</Label>
             {socialMediaUrls.map((socialUrl, index) => (
@@ -203,7 +251,7 @@ export function CompanyProfile() {
                 <Input
                   value={market}
                   onChange={(e) => handleTargetMarketChange(index, e.target.value)}
-                  placeholder="e.g., North America – Mid-Market SaaS companies in cybersecurity and cloud infrastructure"
+                  placeholder="e.g., US, Canada, APAC"
                   className="flex-1"
                 />
                 {targetMarkets.length > 1 && (
@@ -233,7 +281,7 @@ export function CompanyProfile() {
 
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="strategicGoals">
-              Strategic Goals <span className="text-sm text-gray-500">(Use a SMART format: Specific, Measurable, Achievable, Relevant, Time-bound)</span>
+              Strategic Goals <span className="text-sm text-gray-500">(SMART format)</span>
             </Label>
             <Textarea
               id="strategicGoals"
