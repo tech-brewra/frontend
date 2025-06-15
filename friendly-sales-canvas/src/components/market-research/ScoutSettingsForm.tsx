@@ -59,7 +59,6 @@ export function ScoutSettingsForm({ isOpen, onOpenChange }: ScoutSettingsFormPro
   }
 };
 
-
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
