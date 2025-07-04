@@ -21,6 +21,7 @@ import { ScoutSettingsForm } from "@/components/market-research/ScoutSettingsFor
 import { ScoutLoadingAnimation } from "@/components/market-research/ScoutLoadingAnimation";
 import { DataHistoryDialog } from "@/components/market-research/DataHistoryDialog";
 import MarketIntelligenceTab from "@/components/market-research/MarketIntelligenceTab";
+import EditHistoryPanel from "@/components/market-research/EditHistoryPanel";
 import { DeploymentData } from "@/components/layout/Header";
 import { useNavigate } from "react-router-dom";
 import ScoutChatPanel from "@/components/market-research/ScoutChatPanel";
@@ -105,6 +106,17 @@ interface MarketIntelligenceData {
   timestamp?: string; // Add timestamp to track which data is loaded
 }
 
+// Add EditRecord interface for edit history
+interface EditRecord {
+  id: string;
+  timestamp: string;
+  user: string;
+  summary: string;
+  field: string;
+  oldValue: string;
+  newValue: string;
+}
+
 // Cache for market data - persists across component re-renders and page refreshes
 let cachedMarketData: MarketIntelligenceData | null = null;
 let cacheTimestamp: number | null = null;
@@ -173,7 +185,11 @@ const MarketResearch = () => {
     ]
   });
   const [deletedSections, setDeletedSections] = useState<Set<string>>(new Set());
-  const [editHistory] = useState<any[]>([]);
+  
+  // Edit history state
+  const [editHistory, setEditHistory] = useState<EditRecord[]>([]);
+  const [isEditHistoryOpen, setIsEditHistoryOpen] = useState(false);
+  const [hasEdits, setHasEdits] = useState(false);
   
   const navigate = useNavigate();
 
@@ -470,7 +486,21 @@ const MarketResearch = () => {
 
   const handleMarketIntelligenceSaveChanges = () => {
     setIsMarketIntelligenceEditing(false);
-    // Add save logic here
+    setHasEdits(true);
+
+    // Create a new edit record
+    const newEdit: EditRecord = {
+      id: Date.now().toString(),
+      timestamp: new Date().toISOString(),
+      user: 'John Doe',
+      summary: 'Updated market analysis',
+      field: 'Market Intelligence',
+      oldValue: 'Previous values',
+      newValue: 'Updated values',
+    };
+
+    // Add the new edit record to the edit history
+    setEditHistory(prevHistory => [...prevHistory, newEdit]);
   };
 
   const handleMarketIntelligenceCancelEdit = () => {
@@ -494,8 +524,23 @@ const MarketResearch = () => {
     console.log('Generate shareable link clicked');
   };
 
+  // Edit history handlers
   const handleEditHistoryOpen = () => {
-    console.log('Edit history opened');
+    setIsEditHistoryOpen(true);
+  };
+
+  const handleEditHistoryClose = () => {
+    setIsEditHistoryOpen(false);
+  };
+
+  const handleRevertEdit = (editId: string) => {
+    // TODO: Implement revert functionality
+    console.log('Reverting edit:', editId);
+  };
+
+  const handleViewEditDetails = (editId: string) => {
+    // TODO: Implement view details functionality
+    console.log('Viewing edit details:', editId);
   };
 
   // Show error state only if we have an error and no existing data AND not initially loading
@@ -655,7 +700,7 @@ const MarketResearch = () => {
                         isEditing={isMarketIntelligenceEditing}
                         isSplitView={isChatOpen}
                         isExpanded={isMarketIntelligenceExpanded}
-                        hasEdits={false}
+                        hasEdits={hasEdits}
                         deletedSections={deletedSections}
                         editHistory={editHistory}
                         executiveSummary={marketIntelligenceData.executiveSummary}
@@ -703,7 +748,7 @@ const MarketResearch = () => {
                         <ScoutChatPanel
                           showScoutChat={isChatOpen}
                           isSplitView={isChatOpen}
-                          hasEdits={false}
+                          hasEdits={hasEdits}
                           showEditHistory={false}
                           editHistory={editHistory}
                           lastEditedField=""
@@ -712,6 +757,14 @@ const MarketResearch = () => {
                       )}
                     </div>
                     
+                    <EditHistoryPanel
+                      isOpen={isEditHistoryOpen}
+                      onClose={handleEditHistoryClose}
+                      editHistory={editHistory}
+                      onRevert={handleRevertEdit}
+                      onViewDetails={handleViewEditDetails}
+                    />
+
                     {/* Only show other components when chat is not open */}
                     {!isChatOpen && (
                       <>
